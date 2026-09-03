@@ -1,40 +1,32 @@
-# Compiler and Flags
-CC = g++
-CFLAGS = -std=c++17 -Wall -O2
+CXX := g++
+CXXFLAGS := -std=c++17 -Wall -Wextra -O2
+PYTHON := python3
 
-# Detect NumPy include path dynamically
-NUMPY_INC = -I$(shell python3 -c "import numpy; print(numpy.get_include())")
+PYTHON_INC := $(shell $(PYTHON)-config --includes)
+NUMPY_INC := -I$(shell $(PYTHON) -c "import numpy; print(numpy.get_include())")
+PYTHON_LIB := $(shell $(PYTHON)-config --embed --ldflags 2>/dev/null || $(PYTHON)-config --ldflags)
 
-# Python Include and Library Paths
-PYTHON_INC = $(shell python3-config --includes) -I$(shell python3 -c "import numpy; print(numpy.get_include())")
-PYTHON_LIB = -L$(shell python3 -c "import sysconfig; print(sysconfig.get_config_var('LIBDIR'))") -lpython3.13 -Wl,-undefined,dynamic_lookup
+SRC_DIR := src
+OBJ_DIR := obj
+SRCS := $(wildcard $(SRC_DIR)/*.cpp)
+OBJS := $(patsubst $(SRC_DIR)/%.cpp,$(OBJ_DIR)/%.o,$(SRCS))
+TARGET := scheduler
 
-# Directories
-SRC_DIR = src
-OBJ_DIR = obj
+.PHONY: all clean check
 
-# Find Source Files and Convert to Object File Paths
-SRCS = $(wildcard $(SRC_DIR)/*.cpp)
-OBJS = $(patsubst $(SRC_DIR)/%.cpp, $(OBJ_DIR)/%.o, $(SRCS))
+all: check $(TARGET)
 
-# Output Binary
-TARGET = scheduler
+check:
+	@$(PYTHON) -c "import numpy" 2>/dev/null || (echo "Error: NumPy is required. Install it with: pip install numpy"; exit 1)
 
-# Default Rule
-all: $(TARGET)
-
-# Compile Each .cpp File into .o (Ensuring obj/ Directory Exists)
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp | $(OBJ_DIR)
-	$(CC) $(CFLAGS) $(PYTHON_INC) -c $< -o $@
+	$(CXX) $(CXXFLAGS) $(PYTHON_INC) $(NUMPY_INC) -c $< -o $@
 
-# Create obj/ Directory if Not Exists
 $(OBJ_DIR):
 	mkdir -p $(OBJ_DIR)
 
-# Link Object Files into Final Executable
 $(TARGET): $(OBJS)
-	$(CC) $(CFLAGS) -o $@ $^ $(PYTHON_LIB) -ldl -framework CoreFoundation
+	$(CXX) $(CXXFLAGS) -o $@ $^ $(PYTHON_LIB) -ldl
 
-# Clean Compiled Files
 clean:
 	rm -rf $(OBJ_DIR) $(TARGET)
