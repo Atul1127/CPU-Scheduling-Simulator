@@ -17,7 +17,7 @@ TARGET := scheduler
 all: check $(TARGET)
 
 check:
-	@$(PYTHON) -c "import numpy" 2>/dev/null || (echo "Error: NumPy is required. Install it with: pip install numpy"; exit 1)
+	@$(PYTHON) -c "import numpy" 2>/dev/null || (echo "Error: NumPy is required. Install it with the MSYS2 package manager."; exit 1)
 
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp | $(OBJ_DIR)
 	$(CXX) $(CXXFLAGS) $(PYTHON_INC) $(NUMPY_INC) -c $< -o $@
@@ -26,7 +26,7 @@ $(OBJ_DIR):
 	mkdir -p $(OBJ_DIR)
 
 $(TARGET): $(OBJS)
-	$(CXX) $(CXXFLAGS) -o $@ $^ $(PYTHON_LIB) -ldl
+	$(CXX) $(CXXFLAGS) -o $@ $^ $(PYTHON_LIB)
 
 clean:
 	rm -rf $(OBJ_DIR) $(TARGET)
