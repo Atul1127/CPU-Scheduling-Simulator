@@ -13,7 +13,10 @@ TARGET := scheduler
 all: check $(TARGET)
 
 check:
-	@$(PYTHON) -c "import matplotlib" 2>/dev/null || (echo "Error: Matplotlib is required. Install it with the MSYS2 package manager."; exit 1)
+	@$(CXX) --version >/dev/null 2>&1 || (echo "Error: GCC/g++ is required."; exit 1)
+	@$(PYTHON) --version >/dev/null 2>&1 || (echo "Error: Python 3 is required for graphical Gantt charts."; exit 1)
+	@$(PYTHON) -c "import numpy, matplotlib" 2>/dev/null || (echo "Error: NumPy and Matplotlib are required for graphical Gantt charts."; exit 1)
+	@echo "Environment check passed."
 
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp | $(OBJ_DIR)
 	$(CXX) $(CXXFLAGS) -c $< -o $@
@@ -23,6 +26,8 @@ $(OBJ_DIR):
 
 $(TARGET): $(OBJS)
 	$(CXX) $(CXXFLAGS) -o $@ $^
+	@echo "Build complete: ./$(TARGET)"
 
 clean:
 	rm -rf $(OBJ_DIR) $(TARGET)
+	@echo "Build artifacts removed."
