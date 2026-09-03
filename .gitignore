@@ -1,0 +1,14 @@
+# Build artifacts
+obj/
+scheduler
+*.o
+
+# Python cache
+__pycache__/
+*.pyc
+
+# IDE/editor files
+.vscode/
+.idea/
+*.swp
+*~
