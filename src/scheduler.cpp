@@ -1,9 +1,11 @@
 #include "scheduler.h"
 #include <algorithm>
 #include <climits>
+#include <cstdlib>
 #include <iomanip>
 #include <iostream>
 #include <queue>
+#include <sstream>
 #include <string>
 #include <vector>
 
@@ -43,21 +45,23 @@ void SchedulingAlgorithm::printGanttChart() {
 
 void SchedulingAlgorithm::plotGanttChart() {
     if (gantt_chart.empty()) return;
-    std::vector<double> starts, ends, y;
-    std::vector<std::string> labels;
-    double t = 0; int row = 0;
-    for (const auto& [id, d] : gantt_chart) {
-        starts.push_back(t); ends.push_back(t + d); y.push_back(row++);
-        labels.push_back(id == 0 ? "IDLE" : "P" + std::to_string(id)); t += d;
+
+    // Do not embed Python/NumPy inside the C++ process. On Windows/MSYS2,
+    // embedded Python can fail to resolve NumPy's native DLL dependencies
+    // even though `python3 -c "import numpy"` works normally. Instead,
+    // pass the already-computed Gantt segments to a normal Python process.
+    std::ostringstream command;
+    command << "python3 scripts/plot_gantt.py";
+    for (const auto& [id, duration] : gantt_chart) {
+        command << ' ' << id << ':' << duration;
     }
-    for (size_t i = 0; i < starts.size(); ++i) {
-        const double h = 0.25;
-        std::vector<double> xs{starts[i], ends[i], ends[i], starts[i]};
-        std::vector<double> ys{y[i] - h, y[i] - h, y[i] + h, y[i] + h};
-        plt::fill(xs, ys, {{"color", "skyblue"}});
+
+    const int result = std::system(command.str().c_str());
+    if (result != 0) {
+        std::cerr << "\nUnable to open graphical Gantt chart. "
+                  << "Make sure Python 3 and Matplotlib are installed and "
+                  << "run the program from the project root.\n";
     }
-    plt::yticks(y, labels); plt::xlabel("Time"); plt::ylabel("Execution segment");
-    plt::title("CPU Scheduling Gantt Chart"); plt::grid(true); plt::show();
 }
 
 void SchedulingAlgorithm::printMetrics(const std::vector<Process>& ps) {
