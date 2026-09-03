@@ -1,77 +1,86 @@
-# Intelligent CPU Scheduling  Simulator
+# CPU Scheduling Simulator
 
-## Description
-This project is an interactive web-based CPU scheduling algorithm simulator featuring multiple scheduling algorithms with visualization. It is created for educational purposes to help understand how different CPU scheduling algorithms work.
+A C++17 command-line simulator for learning and comparing classic CPU scheduling algorithms. It calculates scheduling metrics and can optionally display a graphical Gantt chart using Matplotlib.
 
-### Purpose
-The purpose of this project is to provide a visual and interactive way to learn and understand various CPU scheduling algorithms. It allows users to input different processes and visualize how each scheduling algorithm handles them.
+## Algorithms
 
-### Features
-- Supports multiple CPU scheduling algorithms: FCFS, SJF, SRTF, Round Robin, and Priority scheduling(Pre-emptive & Non-Pre-emptive).
-- Real-Time Gantt chart visualization.
-- Detailed results including completion time, turnaround time, waiting time, and response time for each process.
-- Dark mode support.
+- FCFS — First Come First Served
+- SJF — Shortest Job First (non-preemptive)
+- SRTF — Shortest Remaining Time First (preemptive SJF)
+- Priority Scheduling — non-preemptive
+- Preemptive Priority Scheduling
+- Round Robin — configurable time quantum
 
-## Installation
-To install and run the project locally, follow these steps:
+## Metrics
 
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/tejasvijain09/Intelligent-CPU-Scheduler-Simulator.git
-   ```
-2. Navigate to the project directory:
-   ```bash
-   cd CPU-scheduler
-   ```
-3. Open `index.html` in your web browser to start the simulator.
+For every process, the simulator reports:
 
-## Usage
-1. Select a CPU scheduling algorithm from the dropdown menu.
-2. Enter the arrival times, burst times, and priority values (if applicable) for the processes.
-3. Click the "Process Input" button to add the processes.
-4. Click the "Calculate" button to visualize the scheduling algorithm and see the results.
-5. Click the "Start" button see the real-time visulaisation of the Gantt Chart. 
+- Completion Time (CT)
+- Turnaround Time (TAT = CT − AT)
+- Waiting Time (WT = TAT − BT)
+- Response Time (RT = first start − AT)
+- Average TAT, WT, and RT
+- CPU utilization
 
-### Examples
-Here are some examples of how to use the simulator:
+Idle CPU intervals are represented explicitly in the Gantt chart.
 
-#### Example 1: First Come First Served (FCFS)
-- Arrival Times: `0 1 2 3`
-- Burst Times: `3 6 4 5`
+## Project Structure
 
-#### Example 2: Shortest Job First (SJF)
-- Arrival Times: `0 1 2 3`
-- Burst Times: `6 8 7 3`
+```text
+CPU-Scheduling-Simulator/
+├── src/
+│   ├── main.cpp
+│   ├── process.cpp
+│   ├── process.h
+│   ├── scheduler.cpp
+│   ├── scheduler.h
+│   └── matplotlibcpp.h
+├── docs/
+├── Makefile
+└── README.md
+```
 
-#### Example 3: Shortest Remaining Time First (SRTF)
-- Arrival Times: `0 2 4 6`
-- Burst Times: `8 4 9 5`
+## Requirements
 
-#### Example 4: Round Robin
-- Arrival Times: `0 1 2 3`
-- Burst Times: `5 4 3 2`
-- Time Quantum: `2`
+- C++17 compiler (GCC recommended)
+- Python 3
+- NumPy
+- Matplotlib
+- `python3-config`
 
-#### Example 5: Priority Scheduling (Non-preemptive)
-- Arrival Times: `0 1 2 3`
-- Burst Times: `4 3 2 1`
-- Priority Values: `2 1 3 4`
+Install the Python dependencies with:
 
-#### Example 6: Priority Scheduling (Preemptive)
-- Arrival Times: `0 1 2 3`
-- Burst Times: `4 3 2 1`
-- Priority Values: `2 1 3 4`
+```bash
+python3 -m pip install numpy matplotlib
+```
 
-## Contributing
-Contributions are welcome! If you have any suggestions or improvements, please create a pull request or open an issue on GitHub.
+## Build and Run
 
-### Guidelines
-- Fork the repository.
-- Create a new branch for your feature or bugfix.
-- Make your changes and commit them with clear and concise messages.
-- Push your changes to your forked repository.
-- Create a pull request to the main repository.
+```bash
+make
+./scheduler
+```
 
-## Resources
-- [GitHub Repository](https://github.com/tejasvijain09/Intelligent-CPU-Scheduler-Simulator.git)
-- [Tejasvi's GitHub Profile](https://github.com/tejasvijain09)
+Clean the build with:
+
+```bash
+make clean
+```
+
+The Makefile detects the active Python installation instead of assuming a specific Python version or operating-system framework.
+
+## Example
+
+For three processes:
+
+```text
+P1: Arrival=0, Burst=5
+P2: Arrival=1, Burst=3
+P3: Arrival=2, Burst=1
+```
+
+Select an algorithm, enter the process data, and the simulator prints the Gantt chart and calculated metrics. A graphical chart can be opened at the end when desired.
+
+## Notes
+
+This project is intended as a fresher-level operating-systems project and emphasizes clear implementations of scheduling algorithms rather than production-scale infrastructure.
