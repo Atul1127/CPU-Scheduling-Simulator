@@ -1,0 +1,27 @@
+name: Build and Smoke Test
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y g++ make python3 python3-numpy python3-matplotlib
+
+      - name: Build
+        run: make
+
+      - name: Smoke test
+        run: bash tests/smoke_test.sh
+
+      - name: Clean
+        run: make clean
