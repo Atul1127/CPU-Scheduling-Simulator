@@ -60,11 +60,13 @@ public:
 class RoundRobin : public SchedulingAlgorithm {
 private:
     int time_quantum;
+
 public:
     explicit RoundRobin(int tq) : time_quantum(tq) {}
     void schedule(std::vector<Process>& processes) override;
     void printGanttChart() override;
     void plotGanttChart() override;
+    void printMetrics(const std::vector<Process>& processes) override;
 };
 
 #endif // SCHEDULER_H
