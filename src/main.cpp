@@ -1,58 +1,60 @@
 #include <iostream>
-#include <vector>
+#include <limits>
 #include <memory>
+#include <vector>
 #include "process.h"
 #include "scheduler.h"
 
 int main() {
     int num_processes;
     std::cout << "Enter the number of processes: ";
-    std::cin >> num_processes;
-
-    if (num_processes <= 0) {
-        std::cerr << "Invalid number of processes! Exiting...\n";
+    if (!(std::cin >> num_processes) || num_processes <= 0) {
+        std::cerr << "Invalid number of processes.\n";
         return 1;
     }
 
-    std::cout << "Choose scheduling algorithm:\n";
-    std::cout << "1. FCFS\n2. SJF\n3. Preemptive SJF\n4. Priority Scheduling\n5. Preemptive Priority Scheduling\n6. Round Robin\n";
-    
+    std::cout << "\nChoose scheduling algorithm:\n"
+              << "1. FCFS\n2. SJF\n3. Preemptive SJF (SRTF)\n"
+              << "4. Priority Scheduling\n5. Preemptive Priority Scheduling\n"
+              << "6. Round Robin\nChoice: ";
+
     int choice;
-    std::cin >> choice;
+    if (!(std::cin >> choice) || choice < 1 || choice > 6) {
+        std::cerr << "Invalid scheduling algorithm.\n";
+        return 1;
+    }
 
-    bool is_priority_scheduling = (choice == 4 || choice == 5); // Only ask for priority in these cases
-
+    const bool needs_priority = choice == 4 || choice == 5;
     std::vector<Process> processes;
-    for (int i = 0; i < num_processes; ++i) {
-        int arrival, burst, prio = 0; // Default priority = 0 (ignored for non-priority algorithms)
+    processes.reserve(num_processes);
 
+    for (int i = 0; i < num_processes; ++i) {
+        int arrival, burst, priority = 0;
         std::cout << "\nProcess " << i + 1 << ":\n";
 
-        do {
-            std::cout << "Arrival Time: ";
-            std::cin >> arrival;
-            if (arrival < 0) std::cerr << "Arrival time cannot be negative! Try again.\n";
-        } while (arrival < 0);
-
-        do {
-            std::cout << "Burst Time: ";
-            std::cin >> burst;
-            if (burst <= 0) std::cerr << "Burst time must be greater than zero! Try again.\n";
-        } while (burst <= 0);
-
-        if (is_priority_scheduling) { // Ask for priority ONLY if needed
-            do {
-                std::cout << "Priority: ";
-                std::cin >> prio;
-                if (prio < 0) std::cerr << "Priority cannot be negative! Try again.\n";
-            } while (prio < 0);
+        std::cout << "Arrival Time: ";
+        if (!(std::cin >> arrival) || arrival < 0) {
+            std::cerr << "Arrival time must be a non-negative integer.\n";
+            return 1;
         }
 
-        processes.emplace_back(i + 1, arrival, burst, prio);
+        std::cout << "Burst Time: ";
+        if (!(std::cin >> burst) || burst <= 0) {
+            std::cerr << "Burst time must be greater than zero.\n";
+            return 1;
+        }
+
+        if (needs_priority) {
+            std::cout << "Priority (smaller number = higher priority): ";
+            if (!(std::cin >> priority) || priority < 0) {
+                std::cerr << "Priority must be a non-negative integer.\n";
+                return 1;
+            }
+        }
+        processes.emplace_back(i + 1, arrival, burst, priority);
     }
 
     std::unique_ptr<SchedulingAlgorithm> scheduler;
-
     switch (choice) {
         case 1: scheduler = std::make_unique<FCFS>(); break;
         case 2: scheduler = std::make_unique<SJF>(); break;
@@ -60,23 +62,26 @@ int main() {
         case 4: scheduler = std::make_unique<PriorityScheduling>(); break;
         case 5: scheduler = std::make_unique<PreemptivePriorityScheduling>(); break;
         case 6: {
-            int tq;
-            do {
-                std::cout << "Enter time quantum: ";
-                std::cin >> tq;
-                if (tq <= 0) std::cerr << "Time quantum must be greater than zero! Try again.\n";
-            } while (tq <= 0);
-            scheduler = std::make_unique<RoundRobin>(tq);
+            int quantum;
+            std::cout << "Time Quantum: ";
+            if (!(std::cin >> quantum) || quantum <= 0) {
+                std::cerr << "Time quantum must be greater than zero.\n";
+                return 1;
+            }
+            scheduler = std::make_unique<RoundRobin>(quantum);
             break;
         }
-        default:
-            std::cerr << "Invalid choice! Exiting...\n";
-            return 1;
+        default: return 1;
     }
 
     scheduler->schedule(processes);
     scheduler->printGanttChart();
-    scheduler->plotGanttChart(); // New visualization
     scheduler->printMetrics(processes);
+
+    std::cout << "\nOpen the graphical Gantt chart? (y/n): ";
+    char plot;
+    if (std::cin >> plot && (plot == 'y' || plot == 'Y')) {
+        scheduler->plotGanttChart();
+    }
     return 0;
 }
