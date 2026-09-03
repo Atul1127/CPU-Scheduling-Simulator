@@ -16,6 +16,7 @@ A C++17 CPU scheduling simulator implementing six classic operating-system sched
 - Configurable Round Robin time quantum
 - Input validation
 - GCC/Make-based build system
+- GitHub Actions build + smoke test
 
 ## Algorithms
 
@@ -49,10 +50,14 @@ CPU-Scheduling-Simulator/
 │   ├── process.cpp
 │   ├── process.h
 │   ├── scheduler.cpp
-│   ├── scheduler.h
-│   └── matplotlibcpp.h
+│   └── scheduler.h
 ├── scripts/
 │   └── plot_gantt.py
+├── tests/
+│   └── smoke_test.sh
+├── .github/
+│   └── workflows/
+│       └── ci.yml
 ├── docs/
 ├── .gitignore
 ├── Makefile
@@ -140,6 +145,17 @@ python3 scripts/plot_gantt.py 0:3 2:3 3:3 1:4
 ```
 
 Arguments use `process_id:duration`. Process ID `0` represents CPU idle time.
+
+## Testing
+
+Build and run the automated smoke test:
+
+```bash
+make
+bash tests/smoke_test.sh
+```
+
+GitHub Actions runs the build and smoke test automatically on pushes and pull requests.
 
 ## Edge Cases
 
