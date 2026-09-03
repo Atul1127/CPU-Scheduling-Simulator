@@ -1,11 +1,9 @@
 #ifndef SCHEDULER_H
 #define SCHEDULER_H
 
+#include <utility>
 #include <vector>
 #include "process.h"
-#include "matplotlibcpp.h"
-
-namespace plt = matplotlibcpp;
 
 class SchedulingAlgorithm {
 public:
