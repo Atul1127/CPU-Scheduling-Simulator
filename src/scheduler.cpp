@@ -52,7 +52,9 @@ void SchedulingAlgorithm::plotGanttChart() {
     }
     for (size_t i = 0; i < starts.size(); ++i) {
         const double h = 0.25;
-        plt::fill({starts[i], ends[i], ends[i], starts[i]}, {y[i]-h, y[i]-h, y[i]+h, y[i]+h});
+        std::vector<double> xs{starts[i], ends[i], ends[i], starts[i]};
+        std::vector<double> ys{y[i] - h, y[i] - h, y[i] + h, y[i] + h};
+        plt::fill(xs, ys, {{"color", "skyblue"}});
     }
     plt::yticks(y, labels); plt::xlabel("Time"); plt::ylabel("Execution segment");
     plt::title("CPU Scheduling Gantt Chart"); plt::grid(true); plt::show();
@@ -107,7 +109,9 @@ void PreemptiveSJF::schedule(std::vector<Process>& ps) {
     std::sort(ps.begin(),ps.end(),[](const Process&a,const Process&b){return a.getArrivalTime()!=b.getArrivalTime()?a.getArrivalTime()<b.getArrivalTime():a.getId()<b.getId();});
     auto cmp=[](const Process*a,const Process*b){
         if(a->getRemainingTime()!=b->getRemainingTime()) return a->getRemainingTime()>b->getRemainingTime();
-        if(a->getArrivalTime()!=b->getArrivalTime()) return a->getArrivalTime()>b->getArrivalTime(); return a->getId()>b->getId();};
+        if(a->getArrivalTime()!=b->getArrivalTime()) return a->getArrivalTime()>b->getArrivalTime();
+        return a->getId()>b->getId();
+    };
     std::priority_queue<Process*,std::vector<Process*>,decltype(cmp)> q(cmp);
     int t=0,done=0; size_t i=0;
     while(done<(int)ps.size()){
@@ -132,12 +136,18 @@ void PriorityScheduling::schedule(std::vector<Process>& ps) {
 void PreemptivePriorityScheduling::schedule(std::vector<Process>& ps) {
     reset(ps); gantt_chart.clear();
     std::sort(ps.begin(),ps.end(),[](const Process&a,const Process&b){return a.getArrivalTime()!=b.getArrivalTime()?a.getArrivalTime()<b.getArrivalTime():a.getId()<b.getId();});
-    auto cmp=[](const Process*a,const Process*b){if(a->getPriority()!=b->getPriority())return a->getPriority()>b->getPriority();if(a->getArrivalTime()!=b->getArrivalTime())return a->getArrivalTime()>b->getArrivalTime();return a->getId()>b->getId();};
+    auto cmp=[](const Process*a,const Process*b){
+        if(a->getPriority()!=b->getPriority()) return a->getPriority()>b->getPriority();
+        if(a->getArrivalTime()!=b->getArrivalTime()) return a->getArrivalTime()>b->getArrivalTime();
+        return a->getId()>b->getId();
+    };
     std::priority_queue<Process*,std::vector<Process*>,decltype(cmp)>q(cmp);int t=0,done=0;size_t i=0;
     while(done<(int)ps.size()){
         while(i<ps.size()&&ps[i].getArrivalTime()<=t)q.push(&ps[i++]);
         if(q.empty()){int next=ps[i].getArrivalTime();add_segment(gantt_chart,0,next-t);t=next;continue;}
-        Process*p=q.top();q.pop();if(p->getStartTime()<0){p->setStartTime(t);p->setResponseTime(t-p->getArrivalTime());}p->setRemainingTime(p->getRemainingTime()-1);add_segment(gantt_chart,p->getId(),1);++t;
+        Process*p=q.top();q.pop();
+        if(p->getStartTime()<0){p->setStartTime(t);p->setResponseTime(t-p->getArrivalTime());}
+        p->setRemainingTime(p->getRemainingTime()-1);add_segment(gantt_chart,p->getId(),1);++t;
         if(p->getRemainingTime()==0){finish(*p,t);++done;}else q.push(p);
     }
 }
